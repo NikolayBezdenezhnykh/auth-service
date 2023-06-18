@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Runtime;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static System.Net.WebRequestMethods;
 
 namespace Api.IdentityServer
 {
@@ -18,7 +19,8 @@ namespace Api.IdentityServer
         /// </summary>
         /// <param name="services">DI контейнер.</param>
         /// <param name="configuration">Секция с настройками для сертификата.</param>
-        public static void AddIdentityServerConfiguration(this IServiceCollection services, IConfiguration configuration)
+        /// <param name="environment">Секция с переменными окружения.</param>
+        public static void AddIdentityServerConfiguration(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
         {
             services
                 .AddOpenIddict()
@@ -26,6 +28,11 @@ namespace Api.IdentityServer
                 {
                     // отключаем от хранилища (у нас своё)
                     options.EnableDegradedMode();
+
+                    if (!environment.IsDevelopment())
+                    {
+                        options.SetIssuer(configuration.GetSection("IdentityServer:Issuer").Value);
+                    }
 
                     // выбираем имя endpoint
                     options

@@ -28,7 +28,7 @@ namespace auth_service.Controllers
             _authService = authService;
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> Register([FromBody] UserDto userDto)
         {
