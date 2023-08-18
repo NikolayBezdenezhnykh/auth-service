@@ -4,13 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain
+namespace Application.Dtos
 {
-    public sealed class UserCredential
+    public class UserRegisterDto
     {
-        public long Id { get; set; }
-
-        public string Login { get; set; }
+        public string Email { get; set; }
 
         public string Password { get; set; }
     }

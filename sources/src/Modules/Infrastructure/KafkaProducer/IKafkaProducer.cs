@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Implementations
+namespace Infrastructure.KafkaProducer
 {
-    public class UserServiceClientConfig
+    public interface IKafkaProducer
     {
-        public string ServiceUrl { get; set; }
+        Task PublishMessageAsync(string message);
     }
 }

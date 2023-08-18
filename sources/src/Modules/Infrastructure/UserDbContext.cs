@@ -8,18 +8,22 @@ using System.Threading.Tasks;
 
 namespace Infrastructure
 {
-    public class UserCredentialDbContext : DbContext
+    public class UserDbContext : DbContext
     {
-        public DbSet<UserCredential> UserCredentials { get; set; }
+        public DbSet<User> Users { get; set; }
 
-        public UserCredentialDbContext(DbContextOptions options)
+        public DbSet<Role> Roles { get; set; }
+
+        public DbSet<UserVerification> UserVerifications { get; set; }
+
+        public UserDbContext(DbContextOptions options)
             : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserCredentialDbContext).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserDbContext).Assembly);
 
             base.OnModelCreating(modelBuilder);
         }

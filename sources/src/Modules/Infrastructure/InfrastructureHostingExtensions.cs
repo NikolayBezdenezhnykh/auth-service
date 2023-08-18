@@ -17,7 +17,7 @@ namespace Infrastructure
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            serviceCollection.AddDbContext<UserCredentialDbContext>(builder =>
+            serviceCollection.AddDbContext<UserDbContext>(builder =>
             {
                 builder.UseNpgsql(connectionString);
             });

@@ -3,6 +3,7 @@ using Application.Implementations;
 using Application.Interfaces;
 using auth_service.IdentityServer;
 using Infrastructure;
+using Infrastructure.KafkaProducer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -29,8 +30,8 @@ namespace Api
             builder.Services.AddIdentityServerConfiguration(builder.Configuration, builder.Environment);
             builder.Services.AddHttpClient();
             builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
-            builder.Services.Configure<UserServiceClientConfig>(options => builder.Configuration.GetSection("UserService").Bind(options));
+            builder.Services.AddScoped<IKafkaProducer, KafkaProducer>();
+            builder.Services.Configure<KafkaProducerConfig>(options => builder.Configuration.GetSection("KafkaProducer").Bind(options));
 
             var app = builder.Build();
 
@@ -47,7 +48,7 @@ namespace Api
         private static async Task UpdateDb(WebApplication app)
         {
             using var scope = app.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<UserCredentialDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
             await db.Database.MigrateAsync();
         }
     }

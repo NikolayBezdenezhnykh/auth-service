@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Runtime;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using static System.Net.WebRequestMethods;
 
 namespace Api.IdentityServer
 {
@@ -41,10 +40,11 @@ namespace Api.IdentityServer
 
                     options.RegisterClaims(JwtRegisteredClaimNames.UniqueName);
 
-                    // options.RegisterScopes("scope");
+                    //options.RegisterScopes("scope");
 
                     options
-                        .AllowPasswordFlow();
+                        .AllowPasswordFlow()
+                        .AllowRefreshTokenFlow();
 
                     options
                         .DisableAccessTokenEncryption()
@@ -77,6 +77,7 @@ namespace Api.IdentityServer
                     // options.AddEventHandler<HandleTokenRequestContext>(builder => builder.UseScopedHandler<TokenRequestHandler>());
 
                     options.SetAccessTokenLifetime(TimeSpan.FromMinutes(10));
+                    options.SetRefreshTokenLifetime(TimeSpan.FromMinutes(60));
                 });
 
             services.Configure<IdentityServerConfig>(options => configuration.GetSection("IdentityServer").Bind(options));

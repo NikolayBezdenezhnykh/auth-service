@@ -1,4 +1,5 @@
 ﻿using Application.Dtos;
+using Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,14 @@ namespace Application.Interfaces
 {
     public interface IAuthService
     {
-        Task RegisterUserAsync(UserDto userDto);
+        Task<Guid> RegisterUserAsync(UserRegisterDto userDto);
 
-        Task<bool> VerifyUserAsync(string login, string password);
+        Task<User> GetUserAsync(string email);
+
+        Task<User> GetUserAsync(Guid userId);
+
+        Task<bool> VerifyUserAsync(UserVerifyDto userDto);
+
+        bool VerifyPassword(User user, string password);
     }
 }
