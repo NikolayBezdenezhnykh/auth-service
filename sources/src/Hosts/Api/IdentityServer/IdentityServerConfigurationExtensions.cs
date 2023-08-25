@@ -43,6 +43,7 @@ namespace Api.IdentityServer
                     //options.RegisterScopes("scope");
 
                     options
+                        .AllowClientCredentialsFlow()
                         .AllowPasswordFlow()
                         .AllowRefreshTokenFlow();
 
@@ -59,22 +60,6 @@ namespace Api.IdentityServer
 
                     // Register an event handler responsible for validating token requests.
                     options.AddEventHandler<ValidateTokenRequestContext>(builder => builder.UseScopedHandler<TokenRequestValidator>());
-
-                    //options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
-                    //    builder.UseInlineHandler(context =>
-                    //    {
-                    //        ValidateClient(context)
-                    //
-                    //        return default;
-                    //    }));
-
-                    //options.AddEventHandler<HandleIntrospectionRequestContext>(builder =>
-                    //    builder.UseInlineHandler(context =>
-                    //    {
-                    //        return default;
-                    //    }));
-
-                    // options.AddEventHandler<HandleTokenRequestContext>(builder => builder.UseScopedHandler<TokenRequestHandler>());
 
                     options.SetAccessTokenLifetime(TimeSpan.FromMinutes(10));
                     options.SetRefreshTokenLifetime(TimeSpan.FromMinutes(60));

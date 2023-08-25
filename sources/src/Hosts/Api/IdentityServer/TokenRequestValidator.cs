@@ -16,10 +16,15 @@ namespace auth_service.IdentityServer
 
         public ValueTask HandleAsync(ValidateTokenRequestContext context)
         {
-            if (context.ClientId != _identityServerConfig.ClientId 
-                || context.ClientSecret != _identityServerConfig.ClientSecret)
+            if(!_identityServerConfig.KnownClients.ContainsKey(context.ClientId))
             {
-                context.Reject("Клиент не зарегистрирован в системе");
+                context.Reject("Клиент не зарегистрирован в системе.");
+                return default;
+            }
+
+            if (_identityServerConfig.KnownClients[context.ClientId] != context.ClientSecret)
+            {
+                context.Reject("Некорректный секрет клиента.");
             }
             return default;
         }

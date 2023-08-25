@@ -63,7 +63,9 @@ namespace auth_service.Controllers
         {
             var request = HttpContext.GetOpenIddictServerRequest();
 
-            if (!request.IsPasswordGrantType() && !request.IsRefreshTokenGrantType())
+            if (!request.IsPasswordGrantType() 
+                && !request.IsRefreshTokenGrantType()
+                && !request.IsClientCredentialsGrantType())
             {
                 return BadRequest(new OpenIddictResponse
                 {
@@ -72,8 +74,24 @@ namespace auth_service.Controllers
                 });
             }
 
-            User user;
             ClaimsIdentity identity;
+            if (request.IsClientCredentialsGrantType())
+            {
+                if (!request.ClientId.EndsWith("service"))
+                {
+                    return BadRequest(new OpenIddictResponse
+                    {
+                        Error = Errors.InvalidRequest,
+                        ErrorDescription = "Указанный grant type для данного клиента не поддерживается."
+                    });
+                }
+
+                identity = ClaimsIdentityForService(request);
+
+                return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
+
+            User user;            
 
             if (request.IsRefreshTokenGrantType())
             {
@@ -113,7 +131,7 @@ namespace auth_service.Controllers
                     return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
                 }
 
-                identity = ClaimsIdentity(request, user);
+                identity = ClaimsIdentityForUser(request, user);
                 return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
 
@@ -127,16 +145,6 @@ namespace auth_service.Controllers
                 });
             }
 
-            var isValid = _authService.VerifyPassword(user, request.Password);
-            if (!isValid)
-            {
-                return BadRequest(new OpenIddictResponse
-                {
-                    Error = Errors.InvalidGrant,
-                    ErrorDescription = "Некорретный пароль."
-                });
-            }
-
             if (user.Status != (int)UserStatus.Activated)
             {
                 var properties = new AuthenticationProperties(new Dictionary<string, string>
@@ -147,12 +155,22 @@ namespace auth_service.Controllers
 
                 return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
+            
+            var isValid = _authService.VerifyPassword(user, request.Password);
+            if (!isValid)
+            {
+                return BadRequest(new OpenIddictResponse
+                {
+                    Error = Errors.InvalidGrant,
+                    ErrorDescription = "Некорретный пароль."
+                });
+            }
 
-            identity = ClaimsIdentity(request, user);
+            identity = ClaimsIdentityForUser(request, user);
             return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
-        private ClaimsIdentity ClaimsIdentity(OpenIddictRequest request, User user)
+        private ClaimsIdentity ClaimsIdentityForUser(OpenIddictRequest request, User user)
         {
             var identity = new ClaimsIdentity(request.GrantType);
             identity.AddClaim(new Claim(Claims.Subject, user.UserId.ToString()));
@@ -170,6 +188,18 @@ namespace auth_service.Controllers
             identity.SetScopes(request.GetScopes());
             identity.SetDestinations(_ => ImmutableArray.Create(new[] { Destinations.AccessToken }));
  
+            return identity;
+        }
+
+        private ClaimsIdentity ClaimsIdentityForService(OpenIddictRequest request)
+        {
+            var identity = new ClaimsIdentity(request.GrantType);
+            identity.AddClaim(new Claim(Claims.Subject, request.ClientId));
+
+            identity.SetResources(request.Resources);
+            identity.SetScopes(request.GetScopes());
+            identity.SetDestinations(_ => ImmutableArray.Create(new[] { Destinations.AccessToken }));
+
             return identity;
         }
     }
